@@ -1322,3 +1322,47 @@ tr.cat td {
     transform: translateY(-4px) scale(1.02);
 }
 
+/* تنسيق قسم آراء العملاء */
+.testimonials-section {
+    padding: 40px 20px;
+    background: #f9f9fb;
+    text-align: center;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 20px auto 0;
+}
+
+.testimonial-card {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+}
+
+.testimonial-text {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.testimonial-author {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 5px;
+}
+
+.testimonial-rating {
+    font-size: 0.9rem;
+}
