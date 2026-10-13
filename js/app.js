@@ -835,3 +835,16 @@ function shareProduct(catId, itemName) {
     const url = `https://wa.me/${WHATSAPP_SHARE}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
 }
+
+
+
+
+
+// ============================ دالة طلب عرض الكينجو عبر الواتساب============================
+function orderKingo() {
+    const phoneNumber = "201090394691";
+    const message = "السلام عليكم، حابب أطلب عرض الكينجو 👑 (بان كيك بقطع المانجو غرقان صوصات) 🥭";
+    
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}

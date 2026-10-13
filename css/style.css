@@ -1366,3 +1366,82 @@ tr.cat td {
 .testimonial-rating {
     font-size: 0.9rem;
 }
+
+/* ===== تنسيق بانر عرض الكينجو ===== */
+.promo-banner {
+    background: linear-gradient(135deg, #0055ff, #002288);
+    color: #ffffff;
+    padding: 25px 20px;
+    margin: 20px auto;
+    max-width: 1100px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 85, 255, 0.25);
+    overflow: hidden;
+}
+
+.promo-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap-reverse;
+}
+
+.promo-text {
+    flex: 1;
+    min-width: 280px;
+}
+
+.promo-badge {
+    background: #ffcc00;
+    color: #000;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.promo-text h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.promo-text p {
+    font-size: 1.1rem;
+    margin-bottom: 18px;
+    line-height: 1.6;
+    opacity: 0.95;
+}
+
+.promo-btn {
+    display: inline-block;
+    background: #ff3366;
+    color: #ffffff;
+    padding: 10px 22px;
+    border-radius: 25px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.promo-btn:hover {
+    background: #e02255;
+    transform: scale(1.05);
+}
+
+.promo-image {
+    flex: 1;
+    min-width: 260px;
+    text-align: center;
+}
+
+.promo-image img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 15px;
+    object-fit: cover;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
