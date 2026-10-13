@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESKIMO Fresh Bar | إسكيمو</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="preloader"><div class="pl-logo">ESKIMO</div><div class="pl-bar"></div></div>
+    <div id="progress"></div>
+
+    <!-- ===== الهيدر (Hero) ===== -->
+    <header class="header hero">
+        <div class="hero-blob blob-1"></div>
+        <div class="hero-blob blob-2"></div>
+        <span class="float f1">🍓</span>
+        <span class="float f2">🥭</span>
+        <span class="float f3">🍦</span>
+        <span class="float f4">☕</span>
+        <span class="float f5">🧇</span>
+        <span class="float f6">🍹</span>
+
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-badge">FRESH BAR</span>
+                <h1>ESKIMO</h1>
+                <p>إسكيمو • أحلى عصاير وحلويات</p>
+            </div>
+
+            <div class="hero-tags">
+                <span>Juice</span><span>Milkshake</span><span>Coffee</span><span>Waffles</span><span>Ice Cream</span>
+            </div>
+
+            <div class="header-info">
+                <p>📍 منوف - شارع الجيش - قدام سيتي ستارز مول</p>
+                <p><a href="tel:01008541582">📞 01008541582</a></p>
+            </div>
+
+            <a href="#categoriesNav" class="hero-cta">شوف المنيو ↓</a>
+        </div>
+
+        <svg class="hero-wave" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,50 C220,100 440,0 720,35 C1000,70 1220,95 1440,45 L1440,90 L0,90 Z" fill="#ffffff"/>
+        </svg>
+    </header>
+
+    <div class="marquee"><div class="marquee-track">
+        <span>🍹 عصائر فريش</span><span>☕ قهوة</span><span>🧇 وافل</span><span>🥭 عالم المانجو</span><span>🍦 آيس كريم</span><span>🥤 ميلك شيك</span><span>🍓 فريسكا</span>
+    </div></div>
+
+    <!-- ===== شريط البحث + طلبي السابق ===== -->
+<div class="search-bar-wrap">
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input 
+            type="search" 
+            id="searchInput" 
+            placeholder="ابحث عن منتج... (مثلاً: وافل، لاتيه، مانجو)"
+            autocomplete="off"
+            inputmode="search">
+        <button type="button" class="search-clear" id="searchClear" aria-label="مسح">✕</button>
+    </div>
+    <button type="button" class="last-order-btn" id="lastOrderBtn" title="اطلب تاني">
+        🔁 <span>طلبي السابق</span>
+    </button>
+</div>
+
+<!-- اقتراحات البحث -->
+<div class="search-suggestions" id="searchSuggestions" hidden></div>
+
+    <!-- ===== شريط الأقسام ===== -->
+    <nav class="categories" id="categoriesNav">
+        <!-- يتم توليدها من JS -->
+    </nav>
+
+    <!-- ===== محتوى المنيو ===== -->
+    <main class="menu-container" id="menuContainer">
+        <!-- يتم توليدها من JS -->
+
+<!-- قسم الأكثر طلباً (يتولّد من JS) -->
+<section id="popular-section" class="popular-section" hidden>
+    <h2 class="section-title">
+        <span class="section-icon">⭐</span>
+        <span class="section-text">الأكثر طلباً</span>
+        <small>POPULAR</small>
+    </h2>
+    <div class="items-grid" id="popularGrid"></div>
+</section>
+
+    </main>
+
+    <!-- ===== زر السلة العائم ===== -->
+    <button class="cart-fab" id="cartFab" onclick="openCart()">
+        🛒
+        <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+
+    <!-- ===== نافذة السلة ===== -->
+    <div class="modal-overlay" id="cartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🛒 سلة الطلبات</h2>
+                <button class="close-btn" onclick="closeCart()">✕</button>
+            </div>
+            <div class="modal-body" id="cartItems">
+                <!-- عناصر السلة -->
+            </div>
+            <div class="modal-footer">
+                <div class="total-row">
+                    <span>الإجمالي:</span>
+                    <span id="cartTotal">0 ج.م</span>
+                </div>
+                <button class="checkout-btn" onclick="openCheckout()">
+                    إتمام الطلب ✅
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== نافذة بيانات العميل ===== -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 بيانات الطلب</h2>
+                <button class="close-btn" onclick="closeCheckout()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm" onsubmit="submitOrder(event)">
+                    <div class="form-group">
+                        <label>الاسم *</label>
+                        <input type="text" id="custName" required placeholder="اكتب اسمك">
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الموبايل * (11 رقم)</label>
+                        <input type="tel" id="custPhone" required 
+                               pattern="01[0-9]{9}" maxlength="11"
+                               placeholder="01xxxxxxxxx">
+                        <small id="phoneError" class="error-msg"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>العنوان *</label>
+                        <textarea id="custAddress" required 
+                                  placeholder="اكتب العنوان بالتفصيل"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>ملاحظات (اختياري)</label>
+                        <textarea id="custNotes" placeholder="أي ملاحظات إضافية"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        إرسال الطلب على واتساب 📱
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== الفوتر ===== -->
+    <footer class="footer">
+        <p style="opacity:.7;font-size:.75rem">الصور التوضيحية من Wikimedia Commons و Flickr (مرخصة للاستخدام)</p>
+        <p>© 2025 ESKIMO Fresh Bar - جميع الحقوق محفوظة</p>
+        <p>تابعنا على إنستجرام: <a href="https://instagram.com/eskimo_menouf" target="_blank">@eskimo_menouf</a></p>
+    </footer>
+
+    <script src="../js/products.js"></script>
+    <script src="../js/art.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/motion.js"></script>
+</body>
+</html>
