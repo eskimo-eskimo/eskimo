@@ -465,27 +465,29 @@ function submitOrder(e) {
     document.getElementById('phoneError').textContent = "";
 
     // تجهيز رسالة الواتساب
+    // تجهيز رسالة الواتساب (مرتبة للموبايل)
     const totalPrice = cart.reduce((s, i) => s + i.qty * i.price, 0);
+    const totalPieces = cart.reduce((s, i) => s + i.qty, 0);
+    const RLM = '\u200F';              // يثبّت الاتجاه من اليمين
+    const LINE = '━━━━━━━━━━━━━━';     // فاصل قصير ما بيلفش
 
-    let message = `*🍦 ESKIMO - طلب جديد*\n`;
-    message += `═══════════════════════\n`;
-    message += `👤 *العميل:* ${name}\n`;
-    message += `📱 *رقم الهاتف:* ${phone}\n`;
-    message += `📍 *العنوان:* ${address}\n`;
-    if (notes) {
-        message += `📝 *ملاحظات:* ${notes}\n`;
-    }
-    message += `═══════════════════════\n`;
-    message += `*🛒 تفاصيل الطلب والأصناف:*\n`;
+    let message = `${RLM}*🍦 ESKIMO - طلب جديد*\n${LINE}\n\n`;
+    message += `${RLM}👤 *الاسم:* ${name}\n`;
+    message += `${RLM}📱 *الموبايل:* ${phone}\n`;
+    message += `${RLM}📍 *العنوان:* ${address}\n`;
+    if (notes) message += `${RLM}📝 *ملاحظات:* ${notes}\n`;
+    message += `\n${LINE}\n${RLM}*🛒 الطلب:*\n\n`;
 
     cart.forEach((item, idx) => {
-        message += `${idx + 1}. *${item.name}*    • الكمية: ${item.qty}   • السعر: ${item.price} ج.م   • الإجمالي: ${item.qty * item.price} ج.م\n`;
+        message += `${RLM}${idx + 1}) *${item.name}*\n`;
+        message += `${RLM}     ${item.qty} × ${item.price} = *${item.qty * item.price} ج.م*\n\n`;
     });
 
-    message += `═══════════════════════\n`;
-    message += `💰 *السعر الإجمالي النهائي:* ${totalPrice} ج.م\n`;
-    message += `═══════════════════════\n`;
-    message += `شكراً لاختيارك إسكيمو! 🍦`;
+    message += `${LINE}\n`;
+    message += `${RLM}📦 عدد القطع: ${totalPieces}\n`;
+    message += `${RLM}💰 *الإجمالي: ${totalPrice} ج.م*\n`;
+    message += `${LINE}\n`;
+    message += `${RLM}شكراً لاختيارك إسكيمو! 🍦`;
 
     // فتح واتساب
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
