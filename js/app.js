@@ -409,7 +409,7 @@ function renderCart() {
     }
 
     itemsContainer.innerHTML = cart.map((item, idx) => `
-        <div class="cart-item">
+        <div class="cart-item" data-offer="${item.catId === 'offers' ? 'true' : 'false'}">
             <img class="cart-item-image"
                  alt="${escAttr(item.name)}"
                  data-cat="${item.catId}" data-name="${escAttr(item.name)}"
@@ -476,14 +476,11 @@ function submitOrder(e) {
 
     // ===== بناء الرسالة =====
     let message = '';
-    
-    // رأس الرسالة
+
     message += '🍦 *ESKIMO Fresh Bar*\n';
     message += '🆕 *طلب جديد*\n';
-    
     message += '━━━━━━━━━━━━━━━\n\n';
-    
-    // بيانات العميل
+
     message += '👤 *بيانات العميل:*\n';
     message += `• الاسم: ${name}\n`;
     message += `• الموبايل: ${phone}\n`;
@@ -492,17 +489,16 @@ function submitOrder(e) {
         message += `• ملاحظات: ${notes}\n`;
     }
     message += '\n━━━━━━━━━━━━━━━\n\n';
-    
-    // تفاصيل الطلب
+
     message += '🛒 *تفاصيل الطلب:*\n\n';
-    
+
     cart.forEach((item, idx) => {
         message += `*${idx + 1}) ${item.name}*\n`;
         message += `   الكمية: ${item.qty}\n`;
         message += `   السعر: ${item.price} ج.م\n`;
         message += `   الإجمالي: ${item.qty * item.price} ج.م\n\n`;
     });
-    
+
     message += '━━━━━━━━━━━━━━━\n';
     message += `💰 *الإجمالي النهائي: ${totalPrice} ج.م*\n`;
     message += '━━━━━━━━━━━━━━━\n\n';
@@ -886,11 +882,32 @@ function shareProduct(catId, itemName) {
 }
 
 // ============================================
-//   5. عرض الكينجو
+//   5. عرض البان كيك ميني - إضافة للسلة
 // ============================================
-function orderKingo() {
-    const phoneNumber = "201008541582";
-    const message = "السلام عليكم، حابب أطلب عرض الكينجو 👑 (بان كيك بقطع المانجو غرقان صوصات) 🥭";
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+function addOfferToCart() {
+    const offerName = 'عرض 2 بان كيك ميني';
+    const offerPrice = 75;
+    const offerImage = 'images/eskiom_offer.jpg';
+
+    const existing = cart.find(c => c.name === offerName && c.price === offerPrice);
+
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        cart.push({
+            name: offerName,
+            price: offerPrice,
+            qty: 1,
+            category: 'عروض',
+            catId: 'offers',
+            image: offerImage,
+            query: ''
+        });
+    }
+
+    renderCart();
+    showToast(`✅ تمت إضافة ${offerName} — ${offerPrice} ج.م`);
+
+    // افتح السلة تلقائياً بعد نص ثانية عشان يشوف
+    setTimeout(() => openCart(), 400);
 }
