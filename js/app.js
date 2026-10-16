@@ -1,14 +1,25 @@
-// ============================================
-//   ملف الوظائف - كل اللوجيك هنا
-// ============================================
+// ===== إخفاء شاشة التحميل =====
+window.addEventListener('load', () => {
+    document.body.classList.add('loaded');
+});
 
-let cart = []; // سلة الطلبات
+// احتياطي: لو الـ load اتأخر، اخفيها بعد 3 ثانية
+setTimeout(() => {
+    document.body.classList.add('loaded');
+    const pre = document.getElementById('preloader');
+    if (pre) pre.style.display = 'none';
+}, 3000);
+
+// ===== رقم الواتساب للمشاركة =====
+const WHATSAPP_SHARE = (typeof WHATSAPP_NUMBER !== 'undefined') ? WHATSAPP_NUMBER : '201008541582';
+
+let cart = [];
 
 // ===== مفاتيح التخزين =====
 const LS_LAST_ORDER = 'eskimo_last_order';
 const LS_LAST_ORDER_TIME = 'eskimo_last_order_time';
 
-// ===== تحويل الأرقام العربية/الهندية لأرقام عادية =====
+// ===== تطبيع الأرقام العربية =====
 function normalizeDigits(str) {
     if (!str) return '';
     const arabicIndic = '٠١٢٣٤٥٦٧٨٩';
@@ -18,7 +29,7 @@ function normalizeDigits(str) {
         .replace(/[۰-۹]/g, d => easternArabic.indexOf(d));
 }
 
-// ===== تطبيع النص العربي للبحث =====
+// ===== تطبيع النص العربي =====
 function normalizeArabic(text) {
     return String(text || '')
         .replace(/[أإآا]/g, 'ا')
@@ -30,38 +41,33 @@ function normalizeArabic(text) {
         .trim();
 }
 
-// ===== رقم الواتساب للمشاركة =====
-const WHATSAPP_SHARE = (typeof WHATSAPP_NUMBER !== 'undefined')
-    ? WHATSAPP_NUMBER
-    : '201090394691';
+// ===== مسار الصور =====
+function asset(p) {
+    return /^(https?:|data:|\.\.\/)/.test(p) ? p : '../' + p;
+}
 
-// مسار الصور: الصفحة جوه html/ والصور في images/ فبنطلع خطوة لفوق (الروابط الخارجية بتفضل زي ما هي)
-function asset(p) { return /^(https?:|data:|\.\.\/)/.test(p) ? p : '../' + p; }
-
-// ===== تشغيل الموقع =====
+// ===== التشغيل =====
 document.addEventListener('DOMContentLoaded', () => {
     renderCategories();
     renderMenu();
-    renderPopular();      // ← جديد
+    renderPopular();
     renderCart();
     setupImages();
     setupBackgroundPhoto();
     setupReveal();
     setupScrollSpy();
-    setupSearch();        // ← جديد
-    setupLastOrder();     // ← جديد
+    setupSearch();
+    setupLastOrder();
 });
 
-// ===== صورة خلفية الموقع (اختيارية) =====
-// حط صورة اسمها bg.jpg جوه فولدر images وهتظهر تلقائياً بشكل هادي ورا المنيو
-// لو مفيش صورة، بيفضل نقش الأيقونات الجاهز
+// ===== خلفية الموقع =====
 function setupBackgroundPhoto() {
     const probe = new Image();
     probe.onload = () => document.body.classList.add('has-bg-photo');
-    probe.src = asset('images/bg.jpg');
+    probe.src = asset('images/logo.png');
 }
 
-// ===== ظهور الكروت بحركة ناعمة وقت التمرير =====
+// ===== ظهور الكروت =====
 function setupReveal() {
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -84,7 +90,7 @@ function setupReveal() {
     });
 }
 
-// ===== تمييز القسم الحالي في الشريط أثناء التمرير =====
+// ===== تمييز القسم الحالي =====
 function setupScrollSpy() {
     if (!('IntersectionObserver' in window)) return;
     const btns = document.querySelectorAll('.cat-btn');
@@ -104,7 +110,7 @@ function setupScrollSpy() {
     });
 }
 
-// ===== رسم أزرار الأقسام =====
+// ===== رسم الأقسام =====
 function renderCategories() {
     const nav = document.getElementById('categoriesNav');
     nav.innerHTML = MENU_DATA.map((cat, idx) => `
@@ -118,7 +124,10 @@ function renderCategories() {
 // ===== رسم المنيو =====
 function renderMenu() {
     const container = document.getElementById('menuContainer');
-    container.innerHTML = MENU_DATA.map(cat => `
+
+    container.innerHTML = MENU_DATA
+        .filter(cat => cat.id !== 'popular-cat')
+        .map(cat => `
         <section id="${cat.id}">
             <h2 class="section-title">
                 <span class="section-icon">${cat.icon}</span>
@@ -132,7 +141,7 @@ function renderMenu() {
     `).join('');
 }
 
-// ===== الصور: صورة المنتج ← صورة القسم ← صورة بديلة بالإيموجي (بتتولد بالـ JS) =====
+// ===== Placeholder SVG =====
 function placeholderSVG(emoji) {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">' +
         '<rect width="400" height="400" fill="#eef2ff"/>' +
@@ -145,12 +154,16 @@ function getCatIcon(catId) {
     return cat && cat.icon ? cat.icon : '🍽️';
 }
 
-// ===== صور من النت (من غير حساب ولا مفتاح) =====
-// الترتيب: صورتك ← Wikimedia Commons (صور مجانية) ← LoremFlickr ← صورة القسم ← الإيموجي
+// ===== البحث عن الصور =====
 const STOP_WORDS = ['single','double','mix','mixed','iced','ice','super','power','extra','special','big','eskimo','box','ripe','fatta'];
-const wikiCache = (() => { try { return JSON.parse(localStorage.getItem('eskimo_wiki') || '{}'); } catch (e) { return {}; } })();
+const wikiCache = (() => {
+    try { return JSON.parse(localStorage.getItem('eskimo_wiki') || '{}'); }
+    catch (e) { return {}; }
+})();
 
-function catHint(catId) { return (typeof CATEGORY_QUERY !== 'undefined' && CATEGORY_QUERY[catId]) || ''; }
+function catHint(catId) {
+    return (typeof CATEGORY_QUERY !== 'undefined' && CATEGORY_QUERY[catId]) || '';
+}
 
 function nameHash(item) {
     let h = 0;
@@ -179,8 +192,10 @@ async function wikiImage(item, catId) {
     for (const q of [specific, hint]) {
         if (!q) continue;
         if (!(q in wikiCache)) {
-            try { wikiCache[q] = await wikiSearch(q); localStorage.setItem('eskimo_wiki', JSON.stringify(wikiCache)); }
-            catch (e) { return ''; }
+            try {
+                wikiCache[q] = await wikiSearch(q);
+                localStorage.setItem('eskimo_wiki', JSON.stringify(wikiCache));
+            } catch (e) { return ''; }
         }
         const list = wikiCache[q];
         if (list.length) return list[q === specific ? 0 : nameHash(item) % list.length];
@@ -195,16 +210,19 @@ function webImage(item, catId) {
 
 function imageSources(catId, item) {
     const list = [];
-    if (item.image && (/^https?:/.test(item.image) || (typeof LOCAL_IMAGES !== 'undefined' && LOCAL_IMAGES))) list.push(() => asset(item.image));
+    if (item.image && (/^https?:/.test(item.image) || (typeof LOCAL_IMAGES !== 'undefined' && LOCAL_IMAGES))) {
+        list.push(() => asset(item.image));
+    }
     if (typeof AUTO_WEB_IMAGES !== 'undefined' && AUTO_WEB_IMAGES) {
         list.push(() => wikiImage(item, catId));
         list.push(() => webImage(item, catId));
     }
-    if (typeof DEFAULT_IMAGES !== 'undefined' && DEFAULT_IMAGES[catId]) list.push(() => asset(DEFAULT_IMAGES[catId]));
+    if (typeof DEFAULT_IMAGES !== 'undefined' && DEFAULT_IMAGES[catId]) {
+        list.push(() => asset(DEFAULT_IMAGES[catId]));
+    }
     return list;
 }
 
-// بتحمّل الصورة اللي بعدها في القايمة (بتتنادى أول مرة، وبعد كل فشل)
 function imgFallback(img) {
     const cat = MENU_DATA.find(c => c.id === img.dataset.cat);
     const item = cat && cat.items.find(i => i.name === img.dataset.name);
@@ -213,39 +231,46 @@ function imgFallback(img) {
     img.dataset.i = i + 1;
     if (i >= list.length) {
         img.onerror = null;
-        img.src = (item && typeof productArt === 'function') ? productArt(cat.id, item) : placeholderSVG(cat ? cat.icon : '🍽️');
+        img.src = placeholderSVG(cat ? cat.icon : '🍽️');
         img.classList.add('img-fallback');
         return;
     }
-    Promise.resolve(list[i]()).then(u => { if (u) img.src = u; else imgFallback(img); }).catch(() => imgFallback(img));
+    Promise.resolve(list[i]()).then(u => {
+        if (u) img.src = u;
+        else imgFallback(img);
+    }).catch(() => imgFallback(img));
 }
 
-// بيبدأ تحميل صورة كل كارت لما يقرب يظهر
 function setupImages() {
     const imgs = document.querySelectorAll('.item-image[data-cat]');
-    if (!('IntersectionObserver' in window)) { imgs.forEach(imgFallback); return; }
+    if (!('IntersectionObserver' in window)) {
+        imgs.forEach(imgFallback);
+        return;
+    }
     const io = new IntersectionObserver(es => es.forEach(e => {
-        if (e.isIntersecting) { io.unobserve(e.target); imgFallback(e.target); }
+        if (e.isIntersecting) {
+            io.unobserve(e.target);
+            imgFallback(e.target);
+        }
     }), { rootMargin: '300px' });
     imgs.forEach(i => io.observe(i));
 }
 
 function escAttr(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;');
 }
 
-// ===== رسم كارت الصنف =====
+// ===== رسم كارت المنتج =====
 function renderItemCard(catId, item) {
     const pricesHtml = item.prices.map((p, i) => {
         let label = "";
         if (item.prices.length === 2) {
-            if (catId === "frappe") {
-                label = i === 0 ? "بدون كريمة: " : "بكريمة: ";
-            } else if (catId === "pancakes") {
-                label = i === 0 ? "12 قطعة: " : "24 قطعة: ";
-            } else {
-                label = i === 0 ? "ساندوتش: " : "مفتوح: ";
-            }
+            if (catId === "frappe") label = i === 0 ? "بدون كريمة: " : "بكريمة: ";
+            else if (catId === "pancakes") label = i === 0 ? "12 قطعة: " : "24 قطعة: ";
+            else label = i === 0 ? "ساندوتش: " : "مفتوح: ";
         }
         const priceText = p > 0 ? `${label}${p} ج.م` : "غير متاح";
         return `<span class="price-tag">${priceText}</span>`;
@@ -259,14 +284,15 @@ function renderItemCard(catId, item) {
     return `
         <div class="item-card" data-cat="${escAttr(catId)}" data-name="${escAttr(item.name)}">
             <div class="item-image-wrapper">
-                <img
-                     alt="${escAttr(item.name)}"
+                <img alt="${escAttr(item.name)}"
                      class="item-image"
                      data-cat="${catId}" data-name="${escAttr(item.name)}"
                      loading="lazy"
                      onerror="imgFallback(this)">
                 ${item.isNew ? '<span class="image-badge">NEW</span>' : ''}
                 ${item.popular ? '<span class="popular-badge">Popular</span>' : ''}
+                ${item.bestSeller ? '<span class="best-badge">🔥 الأكثر مبيعاً</span>' : ''}
+                ${item.discount ? `<span class="discount-badge">خصم ${item.discount}%</span>` : ''}
             </div>
             <div class="item-body">
                 <div class="item-name">${item.name} ${newBadge}</div>
@@ -298,28 +324,24 @@ function scrollToSection(id, btn) {
 // ===== إضافة للسلة =====
 function addToCart(catId, itemName) {
     const category = MENU_DATA.find(c => c.id === catId);
+    if (!category) return;
     const item = category.items.find(i => i.name === itemName);
     if (!item) return;
 
-    // لو الصنف له أكتر من سعر نسأل على النوع
     let selectedPriceIndex = 0;
     if (item.prices.filter(p => p > 0).length > 1) {
-        const priceOptions = item.prices
-            .map((p, i) => {
-                if (p === 0) return null;
-                let label = `سعر ${p} ج.م`;
-                if (item.prices.length === 2) {
-                    if (catId === "frappe") label = i === 0 ? `بدون كريمة - ${p} ج.م` : `بكريمة - ${p} ج.م`;
-                    else if (catId === "pancakes") label = i === 0 ? `12 قطعة - ${p} ج.م` : `24 قطعة - ${p} ج.م`;
-                    else label = i === 0 ? `ساندوتش - ${p} ج.م` : `مفتوح - ${p} ج.م`;
-                }
-                return { index: i, label, price: p };
-            })
-            .filter(Boolean);
+        const priceOptions = item.prices.map((p, i) => {
+            if (p === 0) return null;
+            let label = `سعر ${p} ج.م`;
+            if (item.prices.length === 2) {
+                if (catId === "frappe") label = i === 0 ? `بدون كريمة - ${p} ج.م` : `بكريمة - ${p} ج.م`;
+                else if (catId === "pancakes") label = i === 0 ? `12 قطعة - ${p} ج.م` : `24 قطعة - ${p} ج.م`;
+                else label = i === 0 ? `ساندوتش - ${p} ج.م` : `مفتوح - ${p} ج.م`;
+            }
+            return { index: i, label, price: p };
+        }).filter(Boolean);
 
-        const choice = prompt(
-            `اختار النوع:\n${priceOptions.map((o, i) => `${i + 1}. ${o.label}`).join('\n')}`
-        );
+        const choice = prompt(`اختار النوع:\n${priceOptions.map((o, i) => `${i + 1}. ${o.label}`).join('\n')}`);
         if (!choice) return;
         const choiceIdx = parseInt(choice) - 1;
         if (isNaN(choiceIdx) || !priceOptions[choiceIdx]) return;
@@ -334,7 +356,6 @@ function addToCart(catId, itemName) {
 
     const price = item.prices[selectedPriceIndex];
 
-    // نسأل على الكمية (بتحقق فوري)
     const qtyInput = prompt(`الكمية المطلوبة من "${itemName}" (${price} ج.م):`, "1");
     if (qtyInput === null) return;
     const qty = parseInt(normalizeDigits(qtyInput), 10);
@@ -343,7 +364,6 @@ function addToCart(catId, itemName) {
         return;
     }
 
-    // لو موجود في السلة نفس الصنف بنفس السعر يزود الكمية
     const existing = cart.find(c => c.name === itemName && c.price === price);
 
     if (existing) {
@@ -370,7 +390,6 @@ function renderCart() {
     const badge = document.getElementById('cartBadge');
     const totalEl = document.getElementById('cartTotal');
 
-    // عدد الأصناف المختلفة في السلة (مش مجموع الكميات)
     const totalItems = cart.length;
     const totalPrice = cart.reduce((s, i) => s + i.qty * i.price, 0);
 
@@ -410,29 +429,20 @@ function renderCart() {
     itemsContainer.querySelectorAll('img[data-cat]').forEach(imgFallback);
 }
 
-// ===== تعديل الكمية =====
 function changeQty(idx, delta) {
     cart[idx].qty += delta;
     if (cart[idx].qty < 1) cart[idx].qty = 1;
     renderCart();
 }
 
-// ===== حذف صنف =====
 function removeItem(idx) {
     cart.splice(idx, 1);
     renderCart();
 }
 
-// ===== فتح/غلق السلة =====
-function openCart() {
-    document.getElementById('cartModal').classList.add('active');
-}
+function openCart() { document.getElementById('cartModal').classList.add('active'); }
+function closeCart() { document.getElementById('cartModal').classList.remove('active'); }
 
-function closeCart() {
-    document.getElementById('cartModal').classList.remove('active');
-}
-
-// ===== فتح/غلق نافذة البيانات =====
 function openCheckout() {
     if (cart.length === 0) {
         alert("السلة فاضية!");
@@ -455,59 +465,64 @@ function submitOrder(e) {
     const address = document.getElementById('custAddress').value.trim();
     const notes = document.getElementById('custNotes').value.trim();
 
-    // التحقق من رقم الموبايل (11 رقم يبدأ بـ 01)
     const phoneRegex = /^01[0-9]{9}$/;
     if (!phoneRegex.test(phone)) {
-        document.getElementById('phoneError').textContent = 
-            "رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01";
+        document.getElementById('phoneError').textContent = "رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 01";
         return;
     }
     document.getElementById('phoneError').textContent = "";
 
-    // تجهيز رسالة الواتساب
-    // تجهيز رسالة الواتساب (مرتبة للموبايل)
     const totalPrice = cart.reduce((s, i) => s + i.qty * i.price, 0);
-    const totalPieces = cart.reduce((s, i) => s + i.qty, 0);
-    const RLM = '\u200F';              // يثبّت الاتجاه من اليمين
-    const LINE = '━━━━━━━━━━━━━━';     // فاصل قصير ما بيلفش
 
-    let message = `${RLM}*🍦 ESKIMO - طلب جديد*\n${LINE}\n\n`;
-    message += `${RLM}👤 *الاسم:* ${name}\n`;
-    message += `${RLM}📱 *الموبايل:* ${phone}\n`;
-    message += `${RLM}📍 *العنوان:* ${address}\n`;
-    if (notes) message += `${RLM}📝 *ملاحظات:* ${notes}\n`;
-    message += `\n${LINE}\n${RLM}*🛒 الطلب:*\n\n`;
-
+    // ===== بناء الرسالة =====
+    let message = '';
+    
+    // رأس الرسالة
+    message += '🍦 *ESKIMO Fresh Bar*\n';
+    message += '🆕 *طلب جديد*\n';
+    
+    message += '━━━━━━━━━━━━━━━\n\n';
+    
+    // بيانات العميل
+    message += '👤 *بيانات العميل:*\n';
+    message += `• الاسم: ${name}\n`;
+    message += `• الموبايل: ${phone}\n`;
+    message += `• العنوان: ${address}\n`;
+    if (notes) {
+        message += `• ملاحظات: ${notes}\n`;
+    }
+    message += '\n━━━━━━━━━━━━━━━\n\n';
+    
+    // تفاصيل الطلب
+    message += '🛒 *تفاصيل الطلب:*\n\n';
+    
     cart.forEach((item, idx) => {
-        message += `${RLM}${idx + 1}) *${item.name}*\n`;
-        message += `${RLM}     ${item.qty} × ${item.price} = *${item.qty * item.price} ج.م*\n\n`;
+        message += `*${idx + 1}) ${item.name}*\n`;
+        message += `   الكمية: ${item.qty}\n`;
+        message += `   السعر: ${item.price} ج.م\n`;
+        message += `   الإجمالي: ${item.qty * item.price} ج.م\n\n`;
     });
+    
+    message += '━━━━━━━━━━━━━━━\n';
+    message += `💰 *الإجمالي النهائي: ${totalPrice} ج.م*\n`;
+    message += '━━━━━━━━━━━━━━━\n\n';
+    message += '🙏 شكراً لاختيارك إسكيمو!';
 
-    message += `${LINE}\n`;
-    message += `${RLM}📦 عدد القطع: ${totalPieces}\n`;
-    message += `${RLM}💰 *الإجمالي: ${totalPrice} ج.م*\n`;
-    message += `${LINE}\n`;
-    message += `${RLM}شكراً لاختيارك إسكيمو! 🍦`;
-
-    // فتح واتساب
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
 
-    // تفريغ السلة بعد الإرسال
-    // حفظ الطلب في localStorage قبل ما نفضي السلة
-saveLastOrder();
+    saveLastOrder();
 
-// تفريغ السلة بعد الإرسال
-setTimeout(() => {
-    cart = [];
-    renderCart();
-    closeCheckout();
-    updateLastOrderBtn();
-    document.getElementById('customerForm').reset();
-}, 500);
+    setTimeout(() => {
+        cart = [];
+        renderCart();
+        closeCheckout();
+        updateLastOrderBtn();
+        document.getElementById('customerForm').reset();
+    }, 500);
 }
 
-// ===== إشعار صغير =====
+// ===== Toast =====
 function showToast(msg) {
     const toast = document.createElement('div');
     toast.textContent = msg;
@@ -571,7 +586,6 @@ function doSearch(q) {
     const nq = normalizeArabic(q);
     if (!nq) return [];
     const idx = buildSearchIndex();
-    // ترتيب: بداية الكلمة > داخل الكلمة
     const results = [];
     for (const row of idx) {
         const hay = row.nameNorm + ' ' + row.queryNorm + ' ' + row.ingNorm + ' ' + normalizeArabic(row.catTitle);
@@ -700,7 +714,6 @@ function setupSearch() {
         }
     });
 
-    // اختصار Ctrl+K أو "/" للبحث
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
@@ -715,7 +728,6 @@ function gotoProduct(catId, itemName) {
         `.item-card[data-cat="${CSS.escape(catId)}"][data-name="${CSS.escape(itemName)}"]`
     );
     if (!card) return;
-    // لازم نتأكد إن القسم ظاهر (مش جوه قسم مخفي)
     const cat = document.getElementById(catId);
     if (cat && cat.style.display === 'none') cat.style.display = '';
 
@@ -725,31 +737,71 @@ function gotoProduct(catId, itemName) {
 }
 
 // ============================================
-//   2. الأكثر طلباً (Popular)
+//   قسم الأكثر طلباً - تصميم فخم
 // ============================================
 function renderPopular() {
-    const section = document.getElementById('popular-section');
-    const grid = document.getElementById('popularGrid');
-    if (!section || !grid) return;
-
     const popular = [];
     MENU_DATA.forEach(cat => {
         cat.items.forEach(item => {
-            if (item.popular) popular.push({ catId: cat.id, item });
+            if (item.popular || item.bestSeller) {
+                popular.push({ catId: cat.id, item });
+            }
         });
     });
 
-    if (!popular.length) {
-        section.hidden = true;
-        return;
-    }
-    section.hidden = false;
-    grid.innerHTML = popular.map(p => renderItemCard(p.catId, p.item)).join('');
-    grid.querySelectorAll('.item-image[data-cat]').forEach(imgFallback);
+    if (!popular.length) return;
+
+    const container = document.getElementById('menuContainer');
+    const section = document.createElement('section');
+    section.id = 'popular-section';
+    section.className = 'popular-section';
+
+    const cardsHtml = popular.map((p, idx) => {
+        const price = p.item.prices.find(x => x > 0) || 0;
+        return `
+            <div class="popular-card rank-${idx + 1}">
+                <div class="rank-badge">#${idx + 1}</div>
+                <div class="popular-img-wrap">
+                    <img alt="${escAttr(p.item.name)}"
+                         class="item-image"
+                         data-cat="${p.catId}"
+                         data-name="${escAttr(p.item.name)}"
+                         loading="lazy"
+                         onerror="imgFallback(this)">
+                </div>
+                <div class="popular-body">
+                    <h3 class="popular-name">${p.item.name}</h3>
+                    <p class="popular-ing">${p.item.ingredients || ''}</p>
+                    <div class="popular-footer">
+                        <span class="popular-price">${price} ج.م</span>
+                        <button class="popular-add" 
+                                onclick="addToCart('${p.catId}', '${p.item.name.replace(/'/g, "\\'")}')">
+                            + أضف
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    section.innerHTML = `
+        <div class="popular-header">
+            <span class="popular-crown">👑</span>
+            <h2 class="popular-title">الأكثر طلباً</h2>
+            <p class="popular-sub">المنتجات المفضلة عند عملائنا</p>
+        </div>
+        <div class="popular-scroll">
+            ${cardsHtml}
+        </div>
+    `;
+
+    container.insertBefore(section, container.firstChild);
+
+    section.querySelectorAll('.item-image[data-cat]').forEach(imgFallback);
 }
 
 // ============================================
-//   3. طلبي السابق (Last Order)
+//   3. طلبي السابق
 // ============================================
 function saveLastOrder() {
     if (!cart.length) return;
@@ -789,15 +841,10 @@ function setupLastOrder() {
         const totalItems = last.reduce((s, i) => s + i.qty, 0);
         const totalPrice = last.reduce((s, i) => s + i.qty * i.price, 0);
 
-        if (!confirm(`عايز ترجّع آخر طلب؟\n${last.length} صنف (${totalItems} قطعة) بإجمالي ${totalPrice} ج.م`)) {
-            return;
-        }
+        if (!confirm(`عايز ترجّع آخر طلب؟\n${last.length} صنف (${totalItems} قطعة) بإجمالي ${totalPrice} ج.م`)) return;
 
-        // ادمج مع السلة الحالية (لو فيه نفس الصنف بنفس السعر زوّد الكمية)
         last.forEach(item => {
-            const existing = cart.find(c =>
-                c.name === item.name && c.price === item.price
-            );
+            const existing = cart.find(c => c.name === item.name && c.price === item.price);
             if (existing) existing.qty += item.qty;
             else cart.push({ ...item });
         });
@@ -809,7 +856,7 @@ function setupLastOrder() {
 }
 
 // ============================================
-//   4. مشاركة المنتج على WhatsApp
+//   4. مشاركة المنتج
 // ============================================
 function shareProduct(catId, itemName) {
     const category = MENU_DATA.find(c => c.id === catId);
@@ -838,15 +885,12 @@ function shareProduct(catId, itemName) {
     window.open(url, '_blank');
 }
 
-
-
-
-
-// ============================ دالة طلب عرض الكينجو عبر الواتساب============================
+// ============================================
+//   5. عرض الكينجو
+// ============================================
 function orderKingo() {
-    const phoneNumber = "201090394691";
+    const phoneNumber = "201008541582";
     const message = "السلام عليكم، حابب أطلب عرض الكينجو 👑 (بان كيك بقطع المانجو غرقان صوصات) 🥭";
-    
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 }

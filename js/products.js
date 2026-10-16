@@ -1,8 +1,3 @@
-// ============================================
-//   ملف المنتجات - عدل هنا بس
-//   title: الاسم العربي اللي هيظهر في الشريط
-//   subtitle: الاسم الإنجليزي (اختياري، لو مش عايزه سيبه "")
-// ============================================
 
 const MENU_DATA = [
 
@@ -45,7 +40,7 @@ const MENU_DATA = [
         items: [
             { name: "آيس كوفي لوتس إسكيمو", image: "images/iced-coffee/lotus-eskimo.jpg", ingredients: "آيس كريم - لوتس - اسبريسو - ثلج", prices: [100] },
             { name: "آيس كوفي إسكيمو", image: "images/iced-coffee/eskimo.jpg", ingredients: "آيس كريم - اسبريسو - ثلج", prices: [90] },
-            { name: "آيس لاتيه", image: "images/iced-coffee/iced-latte.jpg", ingredients: "اسبريسو - لبن - ثلج - سيرب سكر", prices: [75] },
+            { name: "آيس لاتيه", image: "images/iced-coffee/iced-latte.jpg", ingredients: "اسبريسو - لبن - ثلج - سيرب سكر", prices: [75], popular: true },
             { name: "آيس كابتشينو", image: "images/iced-coffee/iced-cappuccino.jpg", ingredients: "اسبريسو - لبن - فوم - سيرب سكر - ثلج", prices: [85] },
             { name: "آيس موكا", image: "images/iced-coffee/iced-mocha.jpg", ingredients: "دارك شوكلت - اسبريسو - لبن - فوم - ثلج", prices: [85] },
             { name: "آيس وايت موكا", image: "images/iced-coffee/iced-white-mocha.jpg", ingredients: "وايت شوكلت - اسبريسو - لبن - فوم - ثلج", prices: [85] },
@@ -68,7 +63,7 @@ const MENU_DATA = [
             { name: "برتقال", image: "images/fresh-juices/orange.jpg", prices: [35] },
             { name: "برتقال سكر", image: "images/fresh-juices/orange-sugar.jpg", prices: [35] },
             { name: "ليمون", image: "images/fresh-juices/lemon.jpg", prices: [35] },
-            { name: "ليمون نعناع", image: "images/fresh-juices/lemon-mint.jpg", prices: [35] },
+            { name: "ليمون نعناع", image: "images/fresh-juices/lemon-mint.jpg", prices: [35], popular: true },
             { name: "ليمون باللبن", image: "images/fresh-juices/lemon-milk.jpg", prices: [40] },
             { name: "بطيخ", image: "images/fresh-juices/watermelon.jpg", prices: [35], isNew: true },
             { name: "بطيخ آيس", image: "images/fresh-juices/watermelon-ice.jpg", prices: [45], isNew: true },
@@ -192,7 +187,7 @@ const MENU_DATA = [
             { name: "مانجو", image: "images/milkshakes/mango.jpg", prices: [60] },
             { name: "بندق", image: "images/milkshakes/hazelnut.jpg", prices: [75] },
             { name: "أوريو", image: "images/milkshakes/oreo.jpg", prices: [65] },
-            { name: "موكا", image: "images/milkshakes/mocha.jpg", prices: [65] },
+            { name: "موكا", image: "images/milkshakes/mocha.jpg", prices: [65], popular: true },
             { name: "زبادي فراولة", image: "images/milkshakes/yogurt-strawberry.jpg", prices: [65] },
             { name: "ميجا", image: "images/milkshakes/mega.jpg", prices: [70] },
             { name: "كراميل", image: "images/milkshakes/caramel.jpg", prices: [65] },
@@ -373,8 +368,8 @@ const MENU_DATA = [
             { name: "بوكس الفريسكا", image: "images/boxes/freska-box.jpg", ingredients: "فريسكا قطع + ايس كريم + نوتيلا ميكس", prices: [70] },
             { name: "بوكس وافل إسكيمو", image: "images/boxes/waffle-eskimo.jpg", ingredients: "وافل + فاكهة + صوص نوتيلا", prices: [90] },
             { name: "بوكس الكبير", image: "images/boxes/big-box.jpg", ingredients: "وافل قطع + ميكس نوتيلا", prices: [100] },
-            { name: "بوكس السعادة", image: "images/boxes/happiness-box.jpg", ingredients: "وافل + بان كيك + فريسكا + ميكس نوتيلا", prices: [100] },
-            { name: "بوكس إسكيمو", image: "images/boxes/eskimo-box.jpg", ingredients: "فريسكا قطع + نوتيلا + ايس كريم", prices: [90] },
+            { name: "بوكس السعادة", image: "images/boxes/happiness-box.jpg", ingredients: "وافل + بان كيك + فريسكا + ميكس نوتيلا", prices: [100], popular: true },
+            { name: "بوكس إسكيمو", image: "images/boxes/eskimo-box.jpg", ingredients: "فريسكا قطع + نوتيلا + ايس كريم", prices: [90], popular: true },
         ]
     },
 
@@ -411,7 +406,7 @@ const MENU_DATA = [
 ];
 
 // ===== رقم الواتساب بتاع المحل =====
-const WHATSAPP_NUMBER = "201090394691";
+const WHATSAPP_NUMBER = "201008541582";
 
 // ===== صورة افتراضية لكل قسم (لو المنتج ملوش صورة) =====
 const DEFAULT_IMAGES = {
