@@ -46,6 +46,13 @@ function asset(p) {
     return /^(https?:|data:|\.\.\/)/.test(p) ? p : '../' + p;
 }
 
+// ===== اسم النوع حسب القسم (للأصناف اللي ليها سعرين) =====
+function variantLabel(catId, index) {
+    if (catId === 'frappe') return index === 0 ? 'بدون كريمة' : 'بكريمة';
+    if (catId === 'pancakes') return index === 0 ? '12 قطعة' : '24 قطعة';
+    return index === 0 ? 'ساندوتش' : 'مفتوح';
+}
+
 // ===== التشغيل =====
 document.addEventListener('DOMContentLoaded', () => {
     renderCategories();
@@ -343,7 +350,7 @@ function addToCart(catId, itemName) {
 
         const choice = prompt(`اختار النوع:\n${priceOptions.map((o, i) => `${i + 1}. ${o.label}`).join('\n')}`);
         if (!choice) return;
-        const choiceIdx = parseInt(choice) - 1;
+        const choiceIdx = parseInt(normalizeDigits(choice), 10) - 1;
         if (isNaN(choiceIdx) || !priceOptions[choiceIdx]) return;
         selectedPriceIndex = priceOptions[choiceIdx].index;
     } else {
@@ -355,8 +362,9 @@ function addToCart(catId, itemName) {
     }
 
     const price = item.prices[selectedPriceIndex];
+    const variant = item.prices.length === 2 ? variantLabel(catId, selectedPriceIndex) : '';
 
-    const qtyInput = prompt(`الكمية المطلوبة من "${itemName}" (${price} ج.م):`, "1");
+    const qtyInput = prompt(`الكمية المطلوبة من "${itemName}"${variant ? ' (' + variant + ')' : ''} (${price} ج.م):`, "1");
     if (qtyInput === null) return;
     const qty = parseInt(normalizeDigits(qtyInput), 10);
     if (isNaN(qty) || qty < 1 || qty > 50) {
@@ -364,13 +372,17 @@ function addToCart(catId, itemName) {
         return;
     }
 
-    const existing = cart.find(c => c.name === itemName && c.price === price);
+    const existing = cart.find(c =>
+        c.name === itemName && c.price === price &&
+        c.catId === catId && (c.variant || '') === variant
+    );
 
     if (existing) {
         existing.qty += qty;
     } else {
         cart.push({
             name: itemName,
+            variant: variant,
             price: price,
             qty: qty,
             category: category.title,
@@ -381,7 +393,7 @@ function addToCart(catId, itemName) {
     }
 
     renderCart();
-    showToast(`✅ تمت إضافة ${qty} × ${itemName} — ${qty * price} ج.م`);
+    showToast(`✅ تمت إضافة ${qty} × ${itemName}${variant ? ' (' + variant + ')' : ''} — ${qty * price} ج.م`);
 }
 
 // ===== رسم السلة =====
@@ -415,7 +427,7 @@ function renderCart() {
                  data-cat="${item.catId}" data-name="${escAttr(item.name)}"
                  onerror="imgFallback(this)">
             <div class="cart-item-info">
-                <div class="cart-item-name">${item.name}</div>
+                <div class="cart-item-name">${item.name}${item.variant ? ' <small>(' + item.variant + ')</small>' : ''}</div>
                 <div class="cart-item-price">${item.price} ج.م × ${item.qty} = ${item.price * item.qty} ج.م</div>
             </div>
             <div class="qty-controls">
@@ -493,7 +505,7 @@ function submitOrder(e) {
     message += '🛒 *تفاصيل الطلب:*\n\n';
 
     cart.forEach((item, idx) => {
-        message += `*${idx + 1}) ${item.name}*\n`;
+        message += `*${idx + 1}) ${item.name}${item.variant ? ' (' + item.variant + ')' : ''}*\n`;
         message += `   الكمية: ${item.qty}\n`;
         message += `   السعر: ${item.price} ج.م\n`;
         message += `   الإجمالي: ${item.qty * item.price} ج.م\n\n`;
@@ -840,7 +852,10 @@ function setupLastOrder() {
         if (!confirm(`عايز ترجّع آخر طلب؟\n${last.length} صنف (${totalItems} قطعة) بإجمالي ${totalPrice} ج.م`)) return;
 
         last.forEach(item => {
-            const existing = cart.find(c => c.name === item.name && c.price === item.price);
+            const existing = cart.find(c =>
+                c.name === item.name && c.price === item.price &&
+                c.catId === item.catId && (c.variant || '') === (item.variant || '')
+            );
             if (existing) existing.qty += item.qty;
             else cart.push({ ...item });
         });
@@ -896,6 +911,7 @@ function addOfferToCart() {
     } else {
         cart.push({
             name: offerName,
+            variant: '',
             price: offerPrice,
             qty: 1,
             category: 'عروض',
